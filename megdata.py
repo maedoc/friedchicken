@@ -4,6 +4,7 @@ import glob
 import tqdm
 import numpy as np
 import torch
+import time
 
 
 class MEGData(torch.utils.data.Dataset):
@@ -16,6 +17,8 @@ class MEGData(torch.utils.data.Dataset):
         self.win_pred = win_pred
         self.fname_wins = np.array([self._fname_nwin(fn) for fn in self.fnames])
         self.cumul_wins = np.cumsum(self.fname_wins)
+        self.ngot = 0
+        self.ttime = 0
 
     def _check_sfreq(self):
         t0, t1 = np.lib.format.open_memmap(self.fnames[0])[:2]
@@ -23,8 +26,8 @@ class MEGData(torch.utils.data.Dataset):
 
     def _fname_nwin(self, fname):
         t = self._mmkey(fname)
-        nt = t.shape[0] - self.win_olap
-        nwin = nt // self.win_size
+        nt = t.shape[0] - self.win_size
+        nwin = nt // (self.win_size - self.win_olap)
         return nwin
 
     def __len__(self):
@@ -35,6 +38,7 @@ class MEGData(torch.utils.data.Dataset):
         return np.lib.format.open_memmap(fname)
 
     def __getitem__(self, idx):
+        tic = time.time()
         if isinstance(idx, int):
             idx = np.r_[idx]
         fids = np.digitize(idx, self.cumul_wins)  # file ids for each idx
@@ -46,23 +50,30 @@ class MEGData(torch.utils.data.Dataset):
         for fname, wid in zip(fnames, wids):
             dF = self._mmkey(fname, 'dF')
             i0, i1 = wid*self.win_olap , wid*self.win_olap+self.win_size+self.win_pred
-            win = dF[i0:i1,:maxs]
+            win = dF[i0:i1].copy()[:,:maxs]
             wins.append(win.T)
             # obs, pred = win[:-self.win_pred], win[-self.win_pred:]
 
-            g = self._mmkey(fname, 'pgain')[:maxs]
-            gain.append(g)
+            g = self._mmkey(fname, 'pgain')[:maxs].copy()
+            # weighting by d makes projection to sources unbalanced
+            # g = g * self._mmkey(fname, 'd')
+            gain.append(g.astype('f'))
 
         wins = np.array(wins)
         gain = np.array(gain)
         if idx.size == 1:
             wins, gain = wins[0], gain[0]
         # TODO subject/task encoding
-        return wins[..., :-self.win_pred], gain, wins[..., -self.win_pred:]
+        ret = wins[..., :-self.win_pred].copy(), gain, wins[..., -self.win_pred:].copy()
+        toc = time.time()
+        self.ngot += idx.size
+        self.ttime += toc - tic
+        return ret
 
     @staticmethod
     def _test():
-        data = MEGData('./ready_npy')
+        data = MEGData('./ready_npy', win_size=256, win_olap=0)
+        print(len(data), 'items, ~', int(len(data)*256/data.sfreq/3600), 'hours')
         idx = np.random.randint(0, len(data), size=32)
         b = data[idx]
         print(b[0].shape, b[1].shape, b[2].shape)

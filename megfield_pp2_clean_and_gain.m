@@ -1,7 +1,7 @@
 function megfield_pp2_clean_and_gain(sid)
 %% test
 %sid = '100307'
-datapath = '/mnt/data/duke/brainstorm_db/HCP/data';
+datapath = '/Users/maedoc/brainstorm_db/HCP/data';
 runs = dir(sprintf('%s/%s/*/*c,rfDC.mat', datapath, sid));
 
 %%

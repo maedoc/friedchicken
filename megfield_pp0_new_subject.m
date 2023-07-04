@@ -1,7 +1,8 @@
 function megfield_pp0_new_subject(sid)
 
 sFiles = [];
-anatomy = sprintf('/mnt/s3-hcp/HCP_1200/%s/MEG/anatomy',sid);
+% anatomy = sprintf('/mnt/s3-hcp/HCP_1200/%s/MEG/anatomy',sid);
+anatomy = sprintf('/tmp/hcp/%s/anatomy',sid);
 
 % Process: Import anatomy folder
 sFiles = bst_process('CallProcess', 'process_import_anatomy', sFiles, [], ...
@@ -24,9 +25,10 @@ sFiles = bst_process('CallProcess', 'process_generate_bem', sFiles, [], ...
     'thickness',   4, ...
     'method',      'brainstorm');  % Brainstorm
 
-% link raw files
-glob_4d = sprintf('/mnt/s3-hcp/HCP_1200/%s/unprocessed/MEG/*/4D/c,rfDC', sid);
+%% link raw files
+glob_4d = sprintf('/tmp/hcp/%s/raw/*/c,rfDC', sid);
 rawfiles = dir(glob_4d);
+%%
 for i=1:size(rawfiles,1)
     rawfilepath = [rawfiles(i).folder '/' rawfiles(i).name];
     sFiles = bst_process('CallProcess', 'process_import_data_raw', sFiles, [], ...
