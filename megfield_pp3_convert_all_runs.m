@@ -2,8 +2,8 @@
 % to regular mat files
 
 %% find runs in protocol
-sid = '100307';
-protocol_path = '/Users/maedoc/brainstorm_db/HCP/';
+% sid = '100307';
+protocol_path = 'bstdb/hcp/';
 raw_bst_glob = [protocol_path 'data/*/*_notch_band_clean/data_0*.mat'];
 raw_bst_fnames = dir(raw_bst_glob);
 
