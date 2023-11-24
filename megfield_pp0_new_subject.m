@@ -1,5 +1,28 @@
 function megfield_pp0_new_subject(sid)
 
+
+
+
+
+% Path to a Brainstorm database (= a folder that contains one or more Brainstorm protocols)
+BrainstormDbDir = 'bstdb';
+
+% Load a new uploaded database (sets BrainstormDbDir and load all the protocols it contains)
+db_import(BrainstormDbDir);
+
+% Alternative: Set the Brainstorm DB folder
+% (defines where the new protocols are going to be created, but does not load anything)
+bst_set('BrainstormDbDir', BrainstormDbDir);
+
+% Get the protocol index of an existing protocol (already loaded previously in Brainstorm)
+iProtocol = bst_get('Protocol', 'hcp');
+
+
+
+
+
+
+
 sFiles = [];
 % anatomy = sprintf('/mnt/s3-hcp/HCP_1200/%s/MEG/anatomy',sid);
 anatomy = sprintf('/tmp/hcp/%s/anatomy',sid);
