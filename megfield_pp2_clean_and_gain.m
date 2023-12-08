@@ -1,8 +1,8 @@
 function megfield_pp2_clean_and_gain(sid)
 %% test
 %sid = '100307'
-datapath = 'bstdb/hcp/data';
-runs = dir(sprintf('%s/%s/*/*c,rfDC.mat', datapath, sid));
+datapath = '/tmp/brainstorm_db/hcp/data';
+runs = dir(sprintf('%s/%s/*/*c,rfDC.mat', datapath, sid))
 
 %%
 sFiles = {};
